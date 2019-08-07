@@ -6,6 +6,7 @@ import android.os.Message;
 import com.alibaba.fastjson.JSON;
 import com.github.messenger.bean.MessageBean;
 import com.github.messenger.thread.LoopThread;
+import com.github.messenger.utils.LogUtil;
 import com.github.messenger.utils.StreamUtils;
 
 import java.io.InputStream;
@@ -165,7 +166,7 @@ public class SocketClient extends LoopThread {
                     outputStream.write(message.getBytes());
                     outputStream.write(StreamUtils.END.getBytes());
                     outputStream.flush();
-                    System.out.println("flush : " + message);
+                    LogUtil.log("flush : " + message);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -179,7 +180,7 @@ public class SocketClient extends LoopThread {
             try {
                 String response = StreamUtils.input2String(inputStream);
                 if (response == null || response.equals("")) return;
-                System.out.println("response : " + response);
+                LogUtil.log("response : " + response);
                 if (response.contains("heart_check")) {
                     heartKeys.add(response);
                     return;

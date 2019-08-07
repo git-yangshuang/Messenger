@@ -3,6 +3,7 @@ package com.github.messenger.connect;
 import com.alibaba.fastjson.JSON;
 import com.github.messenger.bean.MessageBean;
 import com.github.messenger.thread.LoopThread;
+import com.github.messenger.utils.LogUtil;
 import com.github.messenger.utils.StreamUtils;
 
 import java.io.IOException;
@@ -107,7 +108,7 @@ public class SocketServerClient extends LoopThread {
     }
 
     public boolean initServer() {
-        System.out.println("initServer...");
+        LogUtil.log("initServer...");
         try {
             server = new ServerSocket(port);
             socketState = 333;
@@ -134,12 +135,12 @@ public class SocketServerClient extends LoopThread {
                 heartTime = 0;
                 responseTime = 0;
                 heartKey = "";
-                System.out.println("wair for connect...");
+                LogUtil.log("wair for connect...");
                 client = server.accept();
                 socketState = 666;
             }
             if (socketState == 666) {
-                System.out.println("connected...");
+                LogUtil.log("connected...");
                 readThread = new WriteReadThread(client.getInputStream(), null);
                 writeThread = new WriteReadThread(null, client.getOutputStream());
                 readThread.start();
@@ -147,7 +148,7 @@ public class SocketServerClient extends LoopThread {
                 socketState = 888;
             }
             if (socketState == 888) {
-                System.out.println("data is transporting");
+                LogUtil.log("data is transporting");
                 pleaseWait();
             }
         } catch (Exception e) {
@@ -206,7 +207,7 @@ public class SocketServerClient extends LoopThread {
         }
         if (b.getMessageId() == null || b.getMessageId().equals("") || b.getCode() == null || b.getCode().equals("")) {
             clientError = "数据格式错误";
-            System.out.println(clientError);
+            LogUtil.log(clientError);
         } else {
             int code = Integer.valueOf(b.getCode());
             switch (code) {
@@ -315,7 +316,7 @@ public class SocketServerClient extends LoopThread {
                 writeToMobile();
             } else {
                 this.stopSelf();
-                System.out.println("All Stream is null");
+                LogUtil.log("All Stream is null");
             }
         }
 
@@ -344,7 +345,7 @@ public class SocketServerClient extends LoopThread {
                 long currentTimeMillis = System.currentTimeMillis();
                 if (currentTimeMillis - heartTime > heartDelay && currentTimeMillis - responseTime > heartDelay) {
                     if (!heartKey.equals("")) {
-                        System.out.println("There is no response for heart message, the key is " + heartKey);
+                        LogUtil.log("There is no response for heart message, the key is " + heartKey);
                         this.stopSelf();
                         changeState(333);
                     }
@@ -353,7 +354,7 @@ public class SocketServerClient extends LoopThread {
                     outputStream.write(heartKey.getBytes());
                     outputStream.write(StreamUtils.END.getBytes());
                     outputStream.flush();
-                    System.out.println("flush : " + heartKey);
+                    LogUtil.log("flush : " + heartKey);
                 }
                 if (messageQueue.size() > 0) {
                     MessageBean bean = messageQueue.poll();
@@ -362,7 +363,7 @@ public class SocketServerClient extends LoopThread {
                     outputStream.write(json.getBytes());
                     outputStream.write(StreamUtils.END.getBytes());
                     outputStream.flush();
-                    System.out.println("flush : " + json);
+                    LogUtil.log("flush : " + json);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -380,7 +381,7 @@ public class SocketServerClient extends LoopThread {
                 String response = StreamUtils.input2String(inputStream);
                 if (response == null) return;
                 responseTime = System.currentTimeMillis();
-                System.out.println("response : " + response);
+                LogUtil.log("response : " + response);
                 heartKey = "";
                 heartTime = responseTime;
                 if (response.contains("heart_check"))return;
